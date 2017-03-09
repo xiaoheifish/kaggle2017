@@ -9,7 +9,8 @@ y = tf.placeholder('float')
 
 train_data = np.load('muchdata-128-128-128-train.npy')
 validation_data = np.load('muchdata-128-128-128-validation.npy')
-print train_data.shape
+print 'train_data.shape:',train_data.shape
+print 'validation_data.shape:',validation_data.shape
 
 def train_neural_network(x):
     prediction = model.CNN(x)
@@ -30,7 +31,7 @@ def train_neural_network(x):
             for data in train_data:
                 total_runs += 1
                 try:
-                    X = data[0]
+                    X = data[0].astype(float)/128-1
                     Y = data[1]
                     #X = tf.transpose(X, perm=[2,1,0])  
                     #X = tf.reshape(X, shape=[-1, IMG_SIZE_PX, IMG_SIZE_PX, SLICE_COUNT, 1])
@@ -46,18 +47,20 @@ def train_neural_network(x):
                     # one of the depths that doesn't come to 20.
                     print('Warning: Training Exception:',str(e))
                     pass
-            
+                #break 
             print('Epoch', epoch+1, 'completed out of',hm_epochs,'loss:',epoch_loss)
 
             correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
             accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
-
-            for data in validation_data:
-                right_cnt=0
+			
+            right_cnt=0
+            for i in range(0,validation_data.shape[0],2):
+                X1=validation_data[i,0].astype(float)/128-1
+                X2=validation_data[i+1,0].astype(float)/128-1
                 try:
-					right_cnt+=accuracy.eval({x:data[0], y:data[1]})
+					right_cnt+=2*accuracy.eval({x:[X1,X2], y:[validation_data[i,1],validation_data[i+1,1]]})
                 except Exception as e:
-                    print('Warning: Training Exception:',str(e))
+                    print('Warning: Test Exception:',str(e))
                     pass
             print('Accuracy:',float(right_cnt)/validation_data.shape[0])
         
