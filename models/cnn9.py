@@ -13,9 +13,9 @@ def maxpool3d(x,k,s):
     #                        size of window         movement of window as you slide about
     return tf.nn.max_pool3d(x, ksize=[1,k,k,k,1], strides=[1,s,s,s,1], padding='SAME')
 def CNN(x):
-    weights = {'W_conv1':tf.Variable(tf.random_normal([3,3,3,1,64],stddev=0.01)),
-               'W_conv2':tf.Variable(tf.random_normal([3,3,3,64,128],stddev=0.01)),
-               'W_conv3':tf.Variable(tf.random_normal([3,3,3,128,256],stddev=0.01)),
+    weights = {'W_conv1':tf.Variable(tf.random_normal([3,3,3,1,64],stddev=0.2)),
+               'W_conv2':tf.Variable(tf.random_normal([3,3,3,64,128],stddev=0.03)),
+               'W_conv3':tf.Variable(tf.random_normal([3,3,3,128,256],stddev=0.02)),
                'W_conv4':tf.Variable(tf.random_normal([3,3,3,256,256],stddev=0.01)),
                'W_conv5':tf.Variable(tf.random_normal([3,3,3,256,512],stddev=0.01)),
                'W_conv6':tf.Variable(tf.random_normal([3,3,3,512,512],stddev=0.01)),
@@ -23,14 +23,14 @@ def CNN(x):
                'W_conv8':tf.Variable(tf.random_normal([3,3,3,512,512],stddev=0.01)),
                'out':tf.Variable(tf.random_normal([512 , n_classes]))}
 
-    biases = {'b_conv1':tf.Variable(tf.random_normal([64],stddev=0.01)),
-              'b_conv2':tf.Variable(tf.random_normal([128],stddev=0.01)),
-              'b_conv3':tf.Variable(tf.random_normal([256],stddev=0.01)),
-              'b_conv4':tf.Variable(tf.random_normal([256],stddev=0.01)),
-              'b_conv5':tf.Variable(tf.random_normal([512],stddev=0.01)),
-              'b_conv6':tf.Variable(tf.random_normal([512],stddev=0.01)),
-              'b_conv7':tf.Variable(tf.random_normal([512],stddev=0.01)),
-              'b_conv8':tf.Variable(tf.random_normal([512],stddev=0.01)),
+    biases = {'b_conv1':tf.Variable(tf.random_normal([64],stddev=0)),
+              'b_conv2':tf.Variable(tf.random_normal([128],stddev=0)),
+              'b_conv3':tf.Variable(tf.random_normal([256],stddev=0)),
+              'b_conv4':tf.Variable(tf.random_normal([256],stddev=0)),
+              'b_conv5':tf.Variable(tf.random_normal([512],stddev=0)),
+              'b_conv6':tf.Variable(tf.random_normal([512],stddev=0)),
+              'b_conv7':tf.Variable(tf.random_normal([512],stddev=0)),
+              'b_conv8':tf.Variable(tf.random_normal([512],stddev=0)),
               'out':tf.Variable(tf.random_normal([n_classes]))}
 
     #                            image X      image Y        image Z

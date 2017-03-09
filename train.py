@@ -1,8 +1,12 @@
 import tensorflow as tf
 import numpy as np
+import time;
 import models.cnn9 as model
 IMG_SIZE_PX = 128
 SLICE_COUNT = 128
+batch_size=4 # batch_size <=4 , for memory constrain
+display = 50
+hm_epochs = 10
 
 x = tf.placeholder('float')
 y = tf.placeholder('float')
@@ -12,14 +16,20 @@ validation_data = np.load('muchdata-128-128-128-validation.npy')
 print 'train_data.shape:',train_data.shape
 print 'validation_data.shape:',validation_data.shape
 
+def get_normalized_data(iters,batch_size,data):
+    X=[data[i,0].astype(float)/128-1 for i in range(iters*batch_size,(iters+1)*batch_size)]
+    Y=[data[i,1] for i in range(iters*batch_size,(iters+1)*batch_size)]
+    return X,Y
+
+
 def train_neural_network(x):
     prediction = model.CNN(x)
     cost = tf.reduce_mean( tf.nn.softmax_cross_entropy_with_logits(labels=y,logits=prediction) )
-    optimizer = tf.train.AdamOptimizer(learning_rate=1e-3).minimize(cost)
-    
-    hm_epochs = 10
-    display = 100
-    with tf.Session() as sess:
+    optimizer = tf.train.AdamOptimizer(learning_rate=1e-5).minimize(cost)
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+   
+    with tf.Session(config=config) as sess:
         #sess.run(tf.initialize_all_variables())
         sess.run(tf.global_variables_initializer())
         successful_runs = 0
@@ -27,38 +37,32 @@ def train_neural_network(x):
         
         for epoch in range(hm_epochs):
             epoch_loss = 0
-            run_cnt = 0
-            for data in train_data:
+            for iters in range(0,train_data.shape[0]/batch_size):
                 total_runs += 1
                 try:
-                    X = data[0].astype(float)/128-1
-                    Y = data[1]
-                    #X = tf.transpose(X, perm=[2,1,0])  
-                    #X = tf.reshape(X, shape=[-1, IMG_SIZE_PX, IMG_SIZE_PX, SLICE_COUNT, 1])
+                    X,Y=get_normalized_data(iters,batch_size,train_data)
                     _, c = sess.run([optimizer, cost], feed_dict={x: X, y: Y})
                     epoch_loss += c
                     successful_runs += 1
-                    run_cnt +=1
-                    if run_cnt % display == 0:
-                        print('Display: ', run_cnt / display,'Average loss:',epoch_loss / run_cnt,'(display iterations:',display,')')
+                    if (iters+1) % display == 0:
+                        print '[',time.asctime( time.localtime(time.time()) ),']','Epoch',epoch+1,'Display', iters / display + 1,'Average loss:',epoch_loss / display,'(display iterations:',display,')'
+                        epoch_loss=0
                 except Exception as e:
                     # I am passing for the sake of notebook space, but we are getting 1 shaping issue from one 
                     # input tensor. Not sure why, will have to look into it. Guessing it's
                     # one of the depths that doesn't come to 20.
-                    print('Warning: Training Exception:',str(e))
+                    print 'Warning: Training Exception:',str(e)
                     pass
                 #break 
-            print('Epoch', epoch+1, 'completed out of',hm_epochs,'loss:',epoch_loss)
 
             correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
-            accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
+            accuracy = tf.reduce_sum(tf.cast(correct, 'float'))
 			
             right_cnt=0
-            for i in range(0,validation_data.shape[0],2):
-                X1=validation_data[i,0].astype(float)/128-1
-                X2=validation_data[i+1,0].astype(float)/128-1
+            for iters in range(0,validation_data.shape[0]/batch_size):
                 try:
-					right_cnt+=2*accuracy.eval({x:[X1,X2], y:[validation_data[i,1],validation_data[i+1,1]]})
+                    X,Y=get_normalized_data(iters,batch_size,train_data)
+                    right_cnt+=accuracy.eval({x:X, y:Y})
                 except Exception as e:
                     print('Warning: Test Exception:',str(e))
                     pass

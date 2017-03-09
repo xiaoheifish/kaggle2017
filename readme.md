@@ -1,6 +1,13 @@
 ## installl
 
 	pip install -t ~/.local/lib/python2.7/site-packages/ dicom 
+## try
+* preprocess
+	* cut
+	* ZCA
+	* data_aug
+* network
+
 
 ## preprocess
 预处理方法主要参考[Full Preprocessing Tutorial](https://www.kaggle.com/gzuidhof/data-science-bowl-2017/full-preprocessing-tutorial/notebook)
